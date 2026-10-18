@@ -1,0 +1,55 @@
+{
+  "embedding": {
+    "model_id": "google/embeddinggemma-2",
+    "dimension": 768,
+    "normalization": "l2",
+    "storage_dtype": "float32",
+    "inference_dtype": "float32",
+    "modalities": [
+      "text"
+    ],
+    "device_policy": "mps_fp32_after_cpu_validation",
+    "batch_size": 8,
+    "max_input_tokens": 8192,
+    "allow_dimension_truncation": false,
+    "allow_remote_code": false,
+    "runtime_offline": true
+  },
+  "sources": [],
+  "storage": {
+    "runtime_dir": "/synthetic/runtime"
+  },
+  "retrieval": {
+    "memory_min_cosine": null,
+    "code_min_cosine": null,
+    "memory_min_bm25": 0.0,
+    "code_min_bm25": 0.0,
+    "candidate_k": 40,
+    "rrf_k": 60,
+    "reranker": {
+      "enabled": false,
+      "supplementary_windows": false,
+      "scope_aware_budget": false,
+      "definition_priority": false,
+      "length_sorted_batches": false,
+      "model_dir": null,
+      "lock_file": null,
+      "profile_id": null,
+      "backend": "cpu",
+      "batch_size": 4,
+      "max_tokens": 512,
+      "max_candidates": 40,
+      "memory_min_score": null,
+      "code_min_score": null
+    }
+  },
+  "runtime": {
+    "backend": "cpu",
+    "debounce_seconds": 2.0,
+    "reconcile_seconds": 300.0,
+    "force_polling": true
+  },
+  "candidate_pilot": {
+    "enabled": false
+  }
+}

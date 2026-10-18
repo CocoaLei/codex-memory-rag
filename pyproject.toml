@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "codex-memory-rag"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "pydantic>=2,<3",
+    "numpy>=2,<3",
+    "pyarrow>=23",
+    "lancedb==0.40.0",
+    "sentence-transformers[image]==6.1.0",
+    "transformers==5.19.0",
+    "torch==2.14.1",
+    "mcp==2.3.0",
+    "fastapi",
+    "uvicorn",
+    "httpx",
+    "watchfiles",
+    "markdown-it-py",
+    "tree-sitter-language-pack==1.21.3",
+    "pathspec",
+    "pyyaml",
+    "tomlkit",
+    "typer",
+    "pillow>=12.3.0",
+]
+
+[project.scripts]
+cmr = "codex_memory_rag.cli:main"
+
+[dependency-groups]
+dev = ["pytest", "pytest-asyncio", "ruff"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests", "integrations/candidate_mcp/tests"]
+markers = ["model: real official model", "e2e: actual Codex session"]
+addopts = "-m 'not model and not e2e'"
+asyncio_mode = "auto"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/codex_memory_rag"]

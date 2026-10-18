@@ -1,0 +1,9 @@
+{
+  "schema": "candidate-cloud-policy-v2",
+  "approved": false,
+  "adapter_seal_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "r4_input_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "project_id": "composing-agent",
+  "max_context_chars": 4000,
+  "files": []
+}

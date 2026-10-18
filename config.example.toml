@@ -1,0 +1,23 @@
+# Copy outside the repository, replace absolute paths, then pass --config explicitly.
+# No source is registered or enabled by this example.
+sources = []
+
+[embedding]
+model_id = "google/embeddinggemma-2"
+dimension = 768
+
+[storage]
+runtime_dir = "/absolute/private/cmr-runtime"
+
+[candidate_pilot]
+enabled = false
+
+# Register each source explicitly, for example:
+# [[sources]]
+# source_id = "my-docs"
+# project_id = "my-project"
+# kind = "docs"
+# root = "/absolute/path/to/your/project"
+# include = ["README.md"]
+# enabled = false
+# allow_cloud_context = false
