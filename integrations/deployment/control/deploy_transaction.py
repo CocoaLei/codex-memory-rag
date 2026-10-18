@@ -962,7 +962,7 @@ def allowed_cli(arguments):
     if any(arg.startswith('--') and arg not in flags for arg in arguments[1:]):
         return False
     index = arguments.index('--project')
-    return index + 1 < len(arguments) and arguments[index + 1] == 'composing-agent' and not any(
+    return index + 1 < len(arguments) and arguments[index + 1] == 'example-project' and not any(
         arg.startswith(('--proj=', '--project=', '--conf')) for arg in arguments)
 
 
@@ -1286,7 +1286,7 @@ class RealBackend:
             job = self.job(tx)
             if job and job.get('pid'):
                 tx.assert_owned_job(job)
-                status = self.cli(tx, ['status','--project','composing-agent'], transient=True)
+                status = self.cli(tx, ['status','--project','example-project'], transient=True)
                 if status is None:
                     time.sleep(min(.1, tx.deadline.remaining()))
                     continue
@@ -1297,13 +1297,13 @@ class RealBackend:
                     ranker = status['reranker']
                     fail(ranker['enabled'] and ranker['ready'] and ranker['error'] is None and ranker['backend'] == 'mps'
                          and ranker['profile'] == tx.manifest['profiles']['reranker_profile'], 'NOT_READY')
-                    fail(set(status['sources']) == {'ca-memory','ca-docs','ca-code'}
+                    fail(set(status['sources']) == {'example-memory','example-docs','example-code'}
                          and all(x['state'] == 'ready' for x in status['sources'].values()), 'NOT_READY')
                     receipt = check_daemon_attestation(tx.release, tx.config)
                     counts = receipt.get('instances', {})
                     fail(counts == {'encoder':1,'reranker':1,'worker':1}, 'MODEL_INSTANCE_LIMIT')
                     readbacks = self.smoke(tx)
-                    snapshot = self.cli(tx, ['status','--project','composing-agent'])
+                    snapshot = self.cli(tx, ['status','--project','example-project'])
                     observed = getattr(self, 'last_smoke_snapshots', [])
                     return {'pid':job['pid'],'sources_ready':True,'guard_verified':True,'readbacks':readbacks,
                             'profiles':tx.manifest['profiles'],'generation':snapshot['generation'],
@@ -1317,13 +1317,13 @@ class RealBackend:
         fail(len(cases) == 2, 'CLI_READBACK_FAILED')
         self.last_smoke_snapshots = []
         for case in cases:
-            args = ['search','--project','composing-agent','--kind',case['kind'],'--query',case['query'],'--source',case['source_id']]
+            args = ['search','--project','example-project','--kind',case['kind'],'--query',case['query'],'--source',case['source_id']]
             search = self.cli(tx, args)
             hits = search.get('results', search.get('hits', []))
             fail(bool(hits), 'CLI_READBACK_FAILED')
             hit = hits[0]
             fail(hit.get('retrieval_role') == 'related_candidate' and hit.get('support_status') == 'not_checked', 'CLI_READBACK_FAILED')
-            value = self.cli(tx, ['context','--project','composing-agent','--chunk-id',hit['chunk_id'],'--max-chars','12000'])
+            value = self.cli(tx, ['context','--project','example-project','--chunk-id',hit['chunk_id'],'--max-chars','12000'])
             items = value.get('items', [])
             fail(value.get('readback_status') == 'complete' and not value.get('truncated') and len(items) == 1
                  and value['generation'] == search['generation'] and value['table_version'] == search['table_version'], 'CLI_READBACK_FAILED')
@@ -1361,7 +1361,7 @@ class RealBackend:
         receipt = check_daemon_attestation(tx.release, tx.config)
         fail(receipt['identity'] == current['identity'], 'FINAL_INSTANCE_CHANGED')
         fail(int((tx.runtime / 'run/daemon.lock').read_text()) == current['pid'], 'FINAL_INSTANCE_CHANGED')
-        status = self.cli(tx, ['status','--project','composing-agent'])
+        status = self.cli(tx, ['status','--project','example-project'])
         fail(status['pid'] == current['pid'] and status['error'] is None and not status['loading'] and not status['syncing']
              and status['embedding_profile'] == tx.manifest['profiles']['embedding_profile']
              and status['reranker']['ready'] and status['reranker']['error'] is None

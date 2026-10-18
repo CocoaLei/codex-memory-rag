@@ -14,8 +14,8 @@ enabled = false
 
 # Register each source explicitly, for example:
 # [[sources]]
-# source_id = "my-docs"
-# project_id = "my-project"
+# source_id = "example-docs"
+# project_id = "example-project"
 # kind = "docs"
 # root = "/absolute/path/to/your/project"
 # include = ["README.md"]

@@ -4,10 +4,10 @@
 
 1. `candidate_adapter.py` 验证策略和候选资格，仅投影允许字段。精确授权包含 source_id、相对路径、file_sha256、chunk_id、line_start、line_end；修改或撤销策略会使旧缓存失效。
 2. `candidate_transport.py` 将四个工具连接到守卫 CLI，限制并发、输出、截止和进程清理。
-3. `candidate_entry.py` 校验封存包、Python 启动标志、r4 身份及独立环境锁后才建立 STDIO 服务。缺少任一绑定时默认拒绝。
+3. `candidate_entry.py` 校验封存包、Python 启动标志、运行身份及独立环境锁后才建立 STDIO 服务。缺少任一绑定时默认拒绝。
 
-`capture_environment.py` 是原封存工作流的环境捕获源文件；它要求已准备的专用部署输入，不是自动迁移或一键安装命令。`integrations/deployment/control/` 保留守卫实现和审计逻辑，运行包布局要求 control 位于发布根下且相邻存在匹配的 src、输入锁和环境记录。
+适配器固定使用 `example-project` 和 `example-memory` / `example-docs` / `example-code`。这些是通用示例标识；运行配置、批准策略和 CLI 守卫必须一致，不会因重命名而自动批准读取或外发资料。
 
-仓库不是原封存包的字节级替代品。源码提取与通用路径调整会改变源码指纹；不要复制旧 seal 或环境锁到本仓库使其看似已验证，也不要把现有项目配置改指本目录。实际运行版本与回滚证据继续原地保留。
+`capture_environment.py` 要求预先准备的专用部署输入，不是一键安装命令。运行包要求 control、src、输入锁和环境记录匹配。保留的版本化绑定字段（如 `r4_input_hash`）属于文件格式合同，不表示本仓库已完成部署验收。
 
-不同项目的通用适配、重新生成专用发布包、现有路径迁移属于后续变更。本次仅提取源码、合成测试和开发文档，没有重新封存、修改资料策略或开展新的会话外发验收。
+源码修改会改变封存指纹；不得复用旧 seal 或环境锁，也不得直接将现有 MCP 配置改指本目录。封存、部署、迁移和真实资料验收均需单独授权。

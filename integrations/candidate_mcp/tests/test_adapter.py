@@ -23,7 +23,7 @@ def impl():
 
 
 def item(**kw):
-    v={'chunk_id':KEY,'project_id':'composing-agent','source_id':'ca-code','worktree_id':'main',
+    v={'chunk_id':KEY,'project_id':'example-project','source_id':'example-code','worktree_id':'main',
        'relative_path':'example.py','path':'/synthetic/code/example.py','line_start':2,'line_end':4,
        'file_sha256':HASH,'status':None,'indexed_at':'2026-10-15T00:00:00Z',
        'retrieval_state':'source_current','current_evidence':True,'evidence_basis':'verified_source_bytes',
@@ -53,12 +53,12 @@ class FakeCli:
 def fixture(tmp_path,approved=True):
     m=impl();f=tmp_path/'policy.json'
     policy={'schema':'candidate-cloud-policy-v2','approved':approved,'adapter_seal_sha256':'c'*64,
-            'r4_input_hash':'d'*64,'project_id':'composing-agent','max_context_chars':12000,
-            'files':[{'source_id':'ca-code','relative_path':'example.py','file_sha256':HASH,'chunk_id':KEY,'line_start':2,'line_end':4}]}
+            'r4_input_hash':'d'*64,'project_id':'example-project','max_context_chars':12000,
+            'files':[{'source_id':'example-code','relative_path':'example.py','file_sha256':HASH,'chunk_id':KEY,'line_start':2,'line_end':4}]}
     f.write_text(json.dumps(policy));f.chmod(0o600)
     store=m.PolicyFile(f,'c'*64,'d'*64)
-    cli=FakeCli();a=m.Adapter(store,cli,{'ca-code':{'root':'/synthetic/code','worktree_id':'main'},
-          'ca-memory':{'root':'/synthetic/memory','worktree_id':None},'ca-docs':{'root':'/synthetic/code','worktree_id':None}})
+    cli=FakeCli();a=m.Adapter(store,cli,{'example-code':{'root':'/synthetic/code','worktree_id':'main'},
+          'example-memory':{'root':'/synthetic/memory','worktree_id':None},'example-docs':{'root':'/synthetic/code','worktree_id':None}})
     return m,a,cli,f
 
 
@@ -78,7 +78,7 @@ def test_search_redacts_all_body_and_unlisted_fields_and_pins_cli_arguments(tmp_
     assert out['results'][0]['relative_path']=='example.py'
     assert out['results'][0]['support_status']=='not_checked'
     assert out['warnings']==WARN
-    assert cli.calls==[['search','--project','composing-agent','--kind','code','--query','explain','--source','ca-code','--literal','normalize_size']]
+    assert cli.calls==[['search','--project','example-project','--kind','code','--query','explain','--source','example-code','--literal','normalize_size']]
 
 
 @pytest.mark.parametrize('args',[{'query':'x','project_id':'other'},{'query':'x','include_archived':True},
@@ -111,7 +111,7 @@ def test_context_requires_issued_candidate_then_matches_snapshot_and_identity(tm
     out=run(a,'candidate_get_context',{'chunk_id':KEY})
     assert out['items'][0]['text']=='line two\nline three\nline four\n'
     assert out['readback_status']=='complete' and 'PRIVATE' not in json.dumps(out)
-    assert cli.calls[-1]==['context','--project','composing-agent','--chunk-id',KEY,'--max-chars','4000']
+    assert cli.calls[-1]==['context','--project','example-project','--chunk-id',KEY,'--max-chars','4000']
 
 
 @pytest.mark.parametrize('change',[{'table_version':4},{'generation':'other'},
@@ -161,11 +161,11 @@ def test_status_projects_only_health_not_operations_or_source_details(tmp_path):
     m,a,cli,f=fixture(tmp_path);cli.result={'warnings':WARN,'pid':42,'dimension':768,'backend':'mps',
      'loading':False,'syncing':False,'error':None,'generation':'g1','embedding_profile':'e',
      'reranker':{'enabled':True,'ready':True,'error':None,'profile':'r','backend':'mps'},
-     'sources':{'ca-code':{'state':'ready','secret':'PRIVATE_SOURCE'}},'operations':[{'secret':'PRIVATE_OP'}],
+     'sources':{'example-code':{'state':'ready','secret':'PRIVATE_SOURCE'}},'operations':[{'secret':'PRIVATE_OP'}],
      'config':'PRIVATE_CONFIG','instances':{'encoder':1,'reranker':1,'worker':1}}
     out=run(a,'candidate_status')
-    assert 'PRIVATE' not in json.dumps(out) and out['sources']=={'ca-code':'ready'}
-    assert cli.calls==[['status','--project','composing-agent']]
+    assert 'PRIVATE' not in json.dumps(out) and out['sources']=={'example-code':'ready'}
+    assert cli.calls==[['status','--project','example-project']]
 
 
 def test_busy_call_rejects_without_queueing_or_second_cli(tmp_path):
@@ -192,12 +192,15 @@ def test_cancelled_call_discards_pending_cache_and_releases_admission(tmp_path):
     asyncio.run(scenario())
 
 
-def test_memory_source_is_project_bound_and_summary_remains_private(tmp_path):
-    m,a,cli,f=fixture(tmp_path);v=json.loads(f.read_text());v['files']=[{'source_id':'ca-memory','relative_path':'note.md','file_sha256':HASH,'chunk_id':KEY,'line_start':2,'line_end':4}];f.write_text(json.dumps(v))
-    cli.result=search([item(source_id='ca-memory',worktree_id=None,relative_path='note.md',path='/synthetic/memory/note.md',
+@pytest.mark.parametrize('source_id,root', [
+    ('example-memory', '/synthetic/memory'), ('example-docs', '/synthetic/code'),
+])
+def test_memory_source_is_project_bound_and_summary_remains_private(tmp_path,source_id,root):
+    m,a,cli,f=fixture(tmp_path);v=json.loads(f.read_text());v['files']=[{'source_id':source_id,'relative_path':'note.md','file_sha256':HASH,'chunk_id':KEY,'line_start':2,'line_end':4}];f.write_text(json.dumps(v))
+    cli.result=search([item(source_id=source_id,worktree_id=None,relative_path='note.md',path=root+'/note.md',
                           retrieval_state='eligible',current_evidence=False,evidence_basis='dated_memory_assertion',status='active')])
     out=run(a,'candidate_search_memory',{'query':'what happened'})
-    assert cli.calls==[['search','--project','composing-agent','--kind','memory','--query','what happened']]
+    assert cli.calls==[['search','--project','example-project','--kind','memory','--query','what happened']]
     assert 'PRIVATE' not in json.dumps(out) and out['results'][0]['evidence_basis']=='dated_memory_assertion'
 
 

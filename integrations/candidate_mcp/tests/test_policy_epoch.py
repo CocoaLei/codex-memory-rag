@@ -10,7 +10,7 @@ def health():
     return {'warnings':WARN,'pid':42,'dimension':768,'backend':'mps',
             'loading':False,'syncing':False,'error':None,'generation':'g1','embedding_profile':'e',
             'reranker':{'enabled':True,'ready':True,'error':None,'profile':'r','backend':'mps'},
-            'sources':{'ca-code':{'state':'ready'}}}
+            'sources':{'example-code':{'state':'ready'}}}
 
 
 def reissue_and_read(adapter,cli):

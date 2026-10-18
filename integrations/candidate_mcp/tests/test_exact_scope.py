@@ -13,14 +13,14 @@ from test_adapter import HASH, KEY, fixture, item, run, search
 ])
 def test_grant_rejects_same_file_other_chunk_or_range(tmp_path, change):
     m, adapter, cli, path = fixture(tmp_path)
-    grant = SimpleNamespace(source_id='ca-code', relative_path='example.py',
+    grant = SimpleNamespace(source_id='example-code', relative_path='example.py',
                             file_sha256=HASH, chunk_id=KEY, line_start=2, line_end=4)
     assert not adapter.granted(item(**change), SimpleNamespace(files=[grant]))
 
 
 def test_exact_grant_allows_only_bound_identity(tmp_path):
     m, adapter, cli, path = fixture(tmp_path)
-    grant = SimpleNamespace(source_id='ca-code', relative_path='example.py',
+    grant = SimpleNamespace(source_id='example-code', relative_path='example.py',
                             file_sha256=HASH, chunk_id=KEY, line_start=2, line_end=4)
     assert adapter.granted(item(), SimpleNamespace(files=[grant]))
 

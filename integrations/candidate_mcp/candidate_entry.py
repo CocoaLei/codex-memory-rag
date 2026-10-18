@@ -76,8 +76,8 @@ class RuntimeBinding:
             config=tomllib.loads(Path(self.config).read_text())
             require(config['candidate_pilot']['enabled'] is True,'SCOPE_DENIED')
             self.sources={s['source_id']:{'root':s['root'],'worktree_id':s.get('worktree_id')}
-                          for s in config['sources'] if s['project_id']=='composing-agent' and s['enabled'] and s['allow_cloud_context']}
-            require(set(self.sources)=={'ca-memory','ca-docs','ca-code'},'SCOPE_DENIED')
+                          for s in config['sources'] if s['project_id']=='example-project' and s['enabled'] and s['allow_cloud_context']}
+            require(set(self.sources)=={'example-memory','example-docs','example-code'},'SCOPE_DENIED')
         except AdapterError:raise
         except Exception as exc:
             code=str(exc)

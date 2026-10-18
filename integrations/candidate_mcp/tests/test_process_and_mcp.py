@@ -144,7 +144,7 @@ class Synthetic:
   if args[0]=='search':return search()
   if args[0]=='context':return context('SYNTHETIC_CONTEXT')
   raise RuntimeError('must not reach a real CLI')
-a=Adapter(PolicyFile(POLICY,'c'*64,'d'*64),Synthetic(),{'ca-code':{'root':'/synthetic/code','worktree_id':'main'}})
+a=Adapter(PolicyFile(POLICY,'c'*64,'d'*64),Synthetic(),{'example-code':{'root':'/synthetic/code','worktree_id':'main'}})
 create_server(a).run(transport='stdio')
 '''.replace('PACKAGE',repr(str(ROOT))).replace('TESTS',repr(str(ROOT/'tests'))).replace('POLICY',repr(str(policy))))
     async def scenario():

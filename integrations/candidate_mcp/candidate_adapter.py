@@ -46,7 +46,7 @@ class Strict(BaseModel):
 
 
 class Grant(Strict):
-    source_id:Literal['ca-memory','ca-docs','ca-code']
+    source_id:Literal['example-memory','example-docs','example-code']
     relative_path:str
     file_sha256:str=Field(pattern=r'^[0-9a-f]{64}$')
     chunk_id:str=Field(pattern=r'^[0-9a-f]{64}$')
@@ -62,7 +62,7 @@ class Policy(Strict):
     approved:bool=False
     adapter_seal_sha256:str=Field(pattern=r'^[0-9a-f]{64}$')
     r4_input_hash:str=Field(pattern=r'^[0-9a-f]{64}$')
-    project_id:Literal['composing-agent']
+    project_id:Literal['example-project']
     max_context_chars:int=Field(ge=1,le=12000)
     files:list[Grant]=Field(max_length=256)
 
@@ -142,10 +142,10 @@ class Adapter:
     def item(self,value,kind=None):
         reject_error(value)
         require(isinstance(value,dict))
-        require(value.get('project_id')=='composing-agent','SCOPE_DENIED')
+        require(value.get('project_id')=='example-project','SCOPE_DENIED')
         source=value.get('source_id');require(source in self.sources,'SCOPE_DENIED')
-        if kind=='code':require(source=='ca-code','SCOPE_DENIED')
-        elif kind=='memory':require(source in {'ca-memory','ca-docs'},'SCOPE_DENIED')
+        if kind=='code':require(source=='example-code','SCOPE_DENIED')
+        elif kind=='memory':require(source in {'example-memory','example-docs'},'SCOPE_DENIED')
         require(value.get('worktree_id')==self.sources[source]['worktree_id'],'SCOPE_DENIED')
         path=relative_path(value.get('relative_path'))
         require(value.get('path')==str(Path(self.sources[source]['root'])/path),'SCOPE_DENIED')
@@ -218,7 +218,7 @@ class Adapter:
         for name,value in sources.items():
             require(isinstance(value,dict) and value.get('state') in {'ready','pending','unavailable','not_indexed','not_ready','syncing','error'})
             states[name]=value['state']
-        return {'project_id':'composing-agent','warnings':list(WARNINGS),**FLAGS,
+        return {'project_id':'example-project','warnings':list(WARNINGS),**FLAGS,
                 'pid':data['pid'],'dimension':768,'backend':data['backend'],'loading':data['loading'],
                 'syncing':data['syncing'],'error':data['error'],'generation':data.get('generation'),
                 'embedding_profile':data.get('embedding_profile'),
@@ -241,11 +241,11 @@ class Adapter:
                     self.policy_snapshot=snap
                 pending=None
                 if name=='candidate_status':
-                    out=self.project_status(await asyncio.wait_for(self.cli(['status','--project','composing-agent'],end),30))
+                    out=self.project_status(await asyncio.wait_for(self.cli(['status','--project','example-project'],end),30))
                 elif name.startswith('candidate_search_'):
                     kind='code' if name.endswith('code') else 'memory'
-                    command=['search','--project','composing-agent','--kind',kind,'--query',args.query]
-                    if kind=='code':command+=['--source','ca-code']
+                    command=['search','--project','example-project','--kind',kind,'--query',args.query]
+                    if kind=='code':command+=['--source','example-code']
                     if kind=='code' and args.literal is not None:command+=['--literal',args.literal]
                     raw=await asyncio.wait_for(self.cli(command,end),30)
                     out=self.project_search(raw,kind,snap.policy);pending=out
@@ -254,7 +254,7 @@ class Adapter:
                     require(issued is not None and issued['policy']==snap and issued['expires']>self.clock(),'CANDIDATE_NOT_ISSUED')
                     require(self.granted(issued['item'],snap.policy),'CLOUD_SCOPE_CHANGED')
                     limit=min(args.max_chars,snap.policy.max_context_chars)
-                    raw=await asyncio.wait_for(self.cli(['context','--project','composing-agent','--chunk-id',args.chunk_id,'--max-chars',str(limit)],end),30)
+                    raw=await asyncio.wait_for(self.cli(['context','--project','example-project','--chunk-id',args.chunk_id,'--max-chars',str(limit)],end),30)
                     out=self.project_context(raw,issued,limit)
                 require(self.clock()<end,'DEADLINE_EXCEEDED');self.policy.check(snap)
                 require(len(json.dumps(out,ensure_ascii=False,allow_nan=False).encode())<=131072,'OUTPUT_LIMIT')
